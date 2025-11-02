@@ -64,7 +64,7 @@ jobs:
           set -e
           if [[ -n "$PUB_API_TOKEN" ]]; then
             echo "Using API token for pub.dev"
-            dart pub token add https://pub.dev "$PUB_API_TOKEN"
+            dart pub token add https://pub.dev --env-var PUB_API_TOKEN
             echo "configured=true" >> "$GITHUB_OUTPUT"
           elif [[ -n "$PUB_CREDENTIALS_JSON" ]]; then
             echo "Using legacy credentials.json"
