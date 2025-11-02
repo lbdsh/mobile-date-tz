@@ -54,7 +54,7 @@ jobs:
             echo "committed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish to pub.dev
+      - name: Configure pub.dev credentials
         if: steps.commit.outputs.committed == 'true'
         env:
           PUB_CREDENTIALS_JSON: ${{ secrets.PUB_CREDENTIALS_JSON }}
@@ -63,7 +63,12 @@ jobs:
             echo "PUB_CREDENTIALS_JSON secret not configured." >&2
             exit 1
           fi
-          dart pub publish --force
+          mkdir -p "$HOME/.pub-cache"
+          printf '%s' "$PUB_CREDENTIALS_JSON" > "$HOME/.pub-cache/credentials.json"
+
+      - name: Publish to pub.dev
+        if: steps.commit.outputs.committed == 'true'
+        run: dart pub publish --force
 
       - name: Push changes and tag
         if: steps.commit.outputs.committed == 'true'
