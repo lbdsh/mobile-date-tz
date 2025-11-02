@@ -34,7 +34,7 @@ Run `dart pub get` and you’re ready.
 ## Instant Gratification
 
 ```dart
-import 'package:mobile_date_tz/date_tz.dart';
+import 'package:mobile_date_tz/mobile_date_tz.dart';
 
 void main() {
   // Optional but recommended: eagerly load TZ data.
@@ -179,6 +179,13 @@ The suite mirrors the original TypeScript cases so regressions are easy to spot.
 - `durationUntil(DateTz other)` helper
 - Format token extensions (`Q` for quarter, `WOY` for ISO week)
 - Optional microsecond precision
+
+---
+
+## Community & Support
+
+- Issues & feature requests: https://github.com/lbdsh/mobile-date-tz/issues
+- Discussions & updates: https://github.com/lbdsh/mobile-date-tz
 
 Open an issue or start a discussion—community feedback shapes priorities.
 

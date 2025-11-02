@@ -1,4 +1,4 @@
-import 'package:mobile_date_tz/date_tz.dart';
+import 'package:mobile_date_tz/mobile_date_tz.dart';
 import 'package:test/test.dart';
 
 void main() {
