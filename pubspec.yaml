@@ -1,13 +1,14 @@
 name: mobile_date_tz
 description: Port of the DateTz timezone utility for Flutter and Dart.
 version: 0.1.1
-homepage: https://github.com/lbdsh/mobile-date-tz
-repository: https://github.com/lbdsh/mobile-date-tz
+homepage: https://github.com/antonino-t/mobile-date-tz
+repository: https://github.com/antonino-t/mobile-date-tz
+issue_tracker: https://github.com/antonino-t/mobile-date-tz/issues
 environment:
   sdk: ">=3.0.0 <4.0.0"
 dependencies:
-  intl: ^0.19.0
-  timezone: ^0.9.2
+  intl: ^0.20.2
+  timezone: ^0.10.1
 dev_dependencies:
   lints: ^3.0.0
   test: ^1.24.0

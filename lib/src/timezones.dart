@@ -1,14 +1,17 @@
 // GENERATED FILE. Do not edit by hand.
 // Converted from src/timezones.ts
 
+/// Represents the standard and daylight saving offsets for a timezone.
 class TimezoneOffset {
   final int sdt;
   final int dst;
   const TimezoneOffset({required this.sdt, required this.dst});
 
+  /// Returns `true` when daylight saving time uses a different offset.
   bool get observesDst => sdt != dst;
 }
 
+/// Lookup table of IANA timezone identifiers and their UTC offsets.
 const Map<String, TimezoneOffset> timezones = <String, TimezoneOffset>{
   'Africa/Abidjan': TimezoneOffset(sdt: 0, dst: 0),
   'Africa/Accra': TimezoneOffset(sdt: 0, dst: 0),

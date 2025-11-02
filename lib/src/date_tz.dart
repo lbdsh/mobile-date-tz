@@ -7,9 +7,12 @@ import 'package:timezone/timezone.dart' as tz;
 import 'idate_tz.dart';
 import 'timezones.dart';
 
+/// Timezone-aware date wrapper that keeps timestamps aligned with IANA zones.
 class DateTz implements IDateTz {
+  /// Helper that bridges between timezone packages and static offset data.
   static final _TimeZoneHelper _tzHelper = _TimeZoneHelper();
 
+  /// Default pattern used by [format] and [parse] when none is supplied.
   static String defaultFormat = 'YYYY-MM-DD HH:mm:ss';
 
   @override
@@ -21,18 +24,27 @@ class DateTz implements IDateTz {
   _OffsetInfo? _offsetCache;
   int? _offsetCacheTimestamp;
 
+  /// Creates a timezone-aware date from a timestamp, map, or another [IDateTz].
+  ///
+  /// When [tzId] is provided it overrides the timezone encoded in [value].
   DateTz(dynamic value, [String? tzId]) {
     _initialise(value, tzId);
   }
 
   DateTz._internal(this.timestamp, this.timezone);
 
+  /// Ensures that the underlying timezone database is loaded.
+  ///
+  /// By default failures are ignored (the static offsets are still usable). Set
+  /// [throwOnFailure] to `true` to surface initialization errors immediately.
   static void initializeTimezones({bool throwOnFailure = false}) {
     _tzHelper.initialize(throwOnFailure: throwOnFailure);
   }
 
+  /// Indicates whether the timezone package finished loading its data.
   static bool get timezonesInitialized => _tzHelper.isInitialized;
 
+  /// Returns the cached standard and daylight offsets for the current timezone.
   TimezoneOffset get timezoneOffset {
     final offset = timezones[timezone];
     if (offset == null) {
@@ -41,6 +53,9 @@ class DateTz implements IDateTz {
     return offset;
   }
 
+  /// Compares this value with [other] if both share the same timezone.
+  ///
+  /// Throws [ArgumentError] when timezones differ.
   int compare(IDateTz other) {
     final otherTz = _coerceTimezone(other.timezone);
     if (timezone != otherTz) {
@@ -49,11 +64,13 @@ class DateTz implements IDateTz {
     return timestamp - other.timestamp;
   }
 
+  /// Returns `true` if [other] uses the same timezone identifier.
   bool isComparable(IDateTz other) {
     final otherTz = _coerceTimezone(other.timezone);
     return timezone == otherTz;
   }
 
+  /// Formats the timestamp using a Moment-like [pattern] and optional [locale].
   String format([String? pattern, String? locale]) {
     pattern ??= defaultFormat;
     final info = _getOffsetInfo();
@@ -96,6 +113,7 @@ class DateTz implements IDateTz {
   @override
   String toString() => format();
 
+  /// Adds [value] units (minute/hour/day/month/year) to this instance.
   DateTz add(int value, String unit) {
     final utc = DateTime.fromMillisecondsSinceEpoch(timestamp, isUtc: true);
     DateTime result;
@@ -123,6 +141,7 @@ class DateTz implements IDateTz {
     return this;
   }
 
+  /// Replaces a specific [unit] (year/month/day/hour/minute) with [value].
   DateTz set(int value, String unit) {
     final utc = DateTime.fromMillisecondsSinceEpoch(timestamp, isUtc: true);
     var year = utc.year;
@@ -157,6 +176,7 @@ class DateTz implements IDateTz {
     return this;
   }
 
+  /// Converts this instance in-place to represent the same instant in [tzId].
   DateTz convertToTimezone(String tzId) {
     tzId = _coerceTimezone(tzId);
     _validateTimezone(tzId);
@@ -165,12 +185,14 @@ class DateTz implements IDateTz {
     return this;
   }
 
+  /// Returns a cloned instance representing the same instant in [tzId].
   DateTz cloneToTimezone(String tzId) {
     tzId = _coerceTimezone(tzId);
     _validateTimezone(tzId);
     return DateTz._internal(timestamp, tzId);
   }
 
+  /// Creates a new [DateTz] for the current instant in the provided [tzId].
   static DateTz now([String? tzId]) {
     final tzName = _coerceTimezone(tzId);
     _validateTimezone(tzName);
@@ -178,6 +200,7 @@ class DateTz implements IDateTz {
     return DateTz(now, tzName);
   }
 
+  /// Parses [dateString] according to [pattern] within the optional [tzId].
   static DateTz parse(String dateString, [String? pattern, String? tzId]) {
     pattern ??= defaultFormat;
     final tzName = _coerceTimezone(tzId);
@@ -348,18 +371,25 @@ class DateTz implements IDateTz {
     return standard;
   }
 
+  /// Whether the current instant observes daylight saving time.
   bool get isDst => _getOffsetInfo().isDst;
 
+  /// Year component in the associated timezone.
   int get year => _localDateTime().year;
 
+  /// Month index (zero-based) in the associated timezone.
   int get month => _localDateTime().month - 1;
 
+  /// Day of the month in the associated timezone.
   int get day => _localDateTime().day;
 
+  /// Hour component in the associated timezone.
   int get hour => _localDateTime().hour;
 
+  /// Minute component in the associated timezone.
   int get minute => _localDateTime().minute;
 
+  /// Day of week using Sunday as zero.
   int get dayOfWeek {
     final weekday = _localDateTime().weekday;
     return weekday % 7;
