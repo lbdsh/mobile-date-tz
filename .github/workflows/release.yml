@@ -1,0 +1,75 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Bump version
+        id: bump
+        run: |
+          VERSION=$(dart run tool/bump_version.dart)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Format source
+        run: dart format .
+
+      - name: Analyze
+        run: dart analyze
+
+      - name: Run tests
+        run: dart test
+
+      - name: Commit release changes
+        id: commit
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: release v${{ steps.bump.outputs.version }}"
+            echo "committed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to pub.dev
+        if: steps.commit.outputs.committed == 'true'
+        env:
+          PUB_CREDENTIALS_JSON: ${{ secrets.PUB_CREDENTIALS_JSON }}
+        run: |
+          if [[ -z "$PUB_CREDENTIALS_JSON" ]]; then
+            echo "PUB_CREDENTIALS_JSON secret not configured." >&2
+            exit 1
+          fi
+          dart pub publish --force
+
+      - name: Push changes and tag
+        if: steps.commit.outputs.committed == 'true'
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git tag "v$VERSION"
+          git push origin HEAD
+          git push origin "v$VERSION"

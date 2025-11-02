@@ -7,8 +7,6 @@ import 'package:timezone/timezone.dart' as tz;
 import 'idate_tz.dart';
 import 'timezones.dart';
 
-const int _msPerMinute = 60000;
-
 class DateTz implements IDateTz {
   static final _TimeZoneHelper _tzHelper = _TimeZoneHelper();
 
