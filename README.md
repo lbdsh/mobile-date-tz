@@ -260,15 +260,13 @@ tool/
 2. GitHub Actions runs `tool/bump_version.dart`, updates the changelog, formats/analyzes/tests, publishes to pub.dev (using `PUB_CREDENTIALS_JSON` secret), and tags the release.
 3. Profit.
 
-Want to ship manually? Run:
+ Want to ship manually? Run:
 
-```bash
-dart run tool/bump_version.dart        # prints new version, updates changelog
-dart pub publish --dry-run
-dart pub publish
-```
-
-> **Setup once:** Run `dart pub token add https://pub.dev` locally, then copy the contents of `$HOME/.pub-cache/credentials.json` into a GitHub secret named `PUB_CREDENTIALS_JSON`. The workflow will write it to the right place before calling `dart pub publish`.
+ ```bash
+ dart run tool/bump_version.dart        # prints new version, updates changelog
+ dart pub publish --dry-run
+ dart pub publish
+ ```
 
 ---
 
