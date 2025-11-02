@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 void main() {
@@ -55,17 +56,30 @@ void main() {
     updatedPubspec.endsWith('\n') ? updatedPubspec : '$updatedPubspec\n',
   );
 
+  _updateChangelog(newVersion);
+
+  stdout.write(newVersion);
+}
+
+void _updateChangelog(String version) {
   final changelogFile = File('CHANGELOG.md');
   final today = DateTime.now().toUtc().toIso8601String().split('T').first;
-  final entry = '## $newVersion - $today\n- Automated release.\n\n';
+  final changes = _collectChanges();
+  final entryBuffer = StringBuffer()
+    ..writeln('## $version - $today')
+    ..writeln(changes.isEmpty ? '- Automated release.' : changes)
+    ..writeln();
+
+  final entry = entryBuffer.toString();
 
   if (changelogFile.existsSync()) {
     final existing = changelogFile.readAsStringSync();
     if (existing.startsWith('#')) {
-      // Preserve existing title if present.
       final lines = existing.split('\n');
-      final title = lines.firstWhere((line) => line.trim().isNotEmpty,
-          orElse: () => '# Changelog');
+      final title = lines.firstWhere(
+        (line) => line.trim().isNotEmpty,
+        orElse: () => '# Changelog',
+      );
       final rest = existing.substring(title.length).trimLeft();
       final buffer = StringBuffer()
         ..writeln(title)
@@ -73,12 +87,53 @@ void main() {
         ..write(entry)
         ..write(rest.isEmpty ? '' : '$rest\n');
       changelogFile.writeAsStringSync(buffer.toString());
-    } else {
-      changelogFile.writeAsStringSync('$entry$existing');
+      return;
     }
-  } else {
-    changelogFile.writeAsStringSync('# Changelog\n\n$entry');
+    changelogFile.writeAsStringSync('$entry$existing');
+    return;
   }
 
-  stdout.write(newVersion);
+  changelogFile.writeAsStringSync('# Changelog\n\n$entry');
+}
+
+String _collectChanges() {
+  final lastTag = _latestTag();
+
+  try {
+    final range = lastTag == null ? ['HEAD'] : ['$lastTag..HEAD'];
+    final args = ['log', '--pretty=- %s', ...range];
+    final result = Process.runSync(
+      'git',
+      args,
+      stdoutEncoding: utf8,
+      stderrEncoding: utf8,
+    );
+    if (result.exitCode == 0) {
+      final output = (result.stdout as String).trimRight();
+      if (output.isNotEmpty) {
+        return output;
+      }
+    }
+  } catch (_) {
+    // ignore, fall back to default entry
+  }
+  return '';
+}
+
+String? _latestTag() {
+  try {
+    final result = Process.runSync(
+      'git',
+      ['describe', '--tags', '--abbrev=0'],
+      stdoutEncoding: utf8,
+      stderrEncoding: utf8,
+    );
+    if (result.exitCode == 0) {
+      final tag = (result.stdout as String).trim();
+      return tag.isEmpty ? null : tag;
+    }
+  } catch (_) {
+    // ignore
+  }
+  return null;
 }

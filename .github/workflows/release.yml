@@ -68,8 +68,10 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           elif [[ -n "$PUB_CREDENTIALS_JSON" ]]; then
             echo "Using legacy credentials.json"
-            mkdir -p "$HOME/.pub-cache"
+            mkdir -p "$HOME/.pub-cache" "$HOME/.dart"
             printf '%s' "$PUB_CREDENTIALS_JSON" > "$HOME/.pub-cache/credentials.json"
+            printf '%s' "$PUB_CREDENTIALS_JSON" > "$HOME/.dart/pub-credentials.json"
+            chmod 600 "$HOME/.pub-cache/credentials.json" "$HOME/.dart/pub-credentials.json"
             if command -v jq >/dev/null 2>&1; then
               jq '.hosted["pub.dev"] | {hasAccessToken: has("accessToken"), hasRefreshToken: has("refreshToken"), expiry: .expiry}' "$HOME/.pub-cache/credentials.json" || echo "Impossibile parsare credentials.json"
             fi
