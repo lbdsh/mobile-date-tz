@@ -1,0 +1,10 @@
+# Node
+node_modules/
+
+# Dart & Flutter
+.dart_tool/
+.packages
+build/
+
+# macOS
+.DS_Store
