@@ -4,11 +4,15 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
 
 jobs:
   release:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    environment:
+      name: master
     permissions:
       contents: write
 
